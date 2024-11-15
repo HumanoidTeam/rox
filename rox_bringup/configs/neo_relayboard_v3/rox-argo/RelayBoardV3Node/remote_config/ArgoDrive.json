@@ -19,6 +19,10 @@
 			"angular_resolution": 4096,
 			"max_motor_revolutions_rpm": 4540,
 			"feedback_mode": "ABSOLUTE_MODULO",
+			"quick_stop": {
+				"disable_motors": false,
+				"digital_input_1": true
+			},
 			"home_offset_enc": 0
 		},
 		"BACK_LEFT": {
@@ -39,6 +43,10 @@
 			"angular_resolution": 4096,
 			"max_motor_revolutions_rpm": 4540,
 			"feedback_mode": "ABSOLUTE_MODULO",
+			"quick_stop": {
+				"disable_motors": false,
+				"digital_input_1": true
+			},
 			"home_offset_enc": 0
 		},
 		"BACK_RIGHT": {
@@ -59,6 +67,10 @@
 			"angular_resolution": 4096,
 			"max_motor_revolutions_rpm": 4540,
 			"feedback_mode": "ABSOLUTE_MODULO",
+			"quick_stop": {
+				"disable_motors": false,
+				"digital_input_1": true
+			},
 			"home_offset_enc": 2048
 		},
 		"FRONT_RIGHT": {
@@ -79,6 +91,10 @@
 			"angular_resolution": 4096,
 			"max_motor_revolutions_rpm": 4540,
 			"feedback_mode": "ABSOLUTE_MODULO",
+			"quick_stop": {
+				"disable_motors": false,
+				"digital_input_1": true
+			},
 			"home_offset_enc": 2048
 		}
 	}
