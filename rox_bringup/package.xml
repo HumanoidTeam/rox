@@ -10,20 +10,20 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <exec_depend>topic_tools</exec_depend>
-  <exec_depend>ros_gz</exec_depend>
   <exec_depend>teleop_twist_joy</exec_depend>
   <exec_depend>teleop_twist_keyboard</exec_depend>
+
+  <exec_depend>neo_gz_worlds</exec_depend>
+  <exec_depend>rox_description</exec_depend>
+  <exec_depend>ros_gz</exec_depend>
+  <exec_depend>ros_gz_sim</exec_depend>
+  <exec_depend>ros_gz_bridge</exec_depend>
+  <exec_depend>gz_ros2_control</exec_depend>
 
   <!-- Dependencies for Sick SafetyScanners -->
   <exec_depend>sick_safetyscanners_base</exec_depend>
   <exec_depend>sick_safetyscanners2_interfaces</exec_depend>
   <exec_depend>sick_safetyscanners2</exec_depend>
-
-  <!-- Dependencies for UR libraries -->
-  <exec_depend>ur_client_library</exec_depend>
-  <exec_depend>ur_description</exec_depend>
-  <exec_depend>ur_msgs</exec_depend>
-  <exec_depend>ur_robot_driver</exec_depend>
 
   <!-- Dependencies for Phidget IMU -->
   <exec_depend>phidgets_drivers</exec_depend>
