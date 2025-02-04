@@ -1,7 +1,10 @@
 <?xml version="1.0"?>
 <!-- This is the main URDF file for mpo_700-->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="ur">
-
+  <!--
+    Author: Pradheep Padmanabhan
+    Contributor: Adarsh Karan K P
+  -->
             <!-- create arm from macro-->
             <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro"/>
             <xacro:include filename="$(find ur_robot_driver)/urdf/ur.ros2_control.xacro" />
