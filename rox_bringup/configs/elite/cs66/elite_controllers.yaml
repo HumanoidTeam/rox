@@ -1,0 +1,38 @@
+controller_manager:
+  ros__parameters:
+
+    update_rate: 100 # Hz
+    
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    arm_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+arm_controller:
+  ros__parameters:
+    joints:
+      - cs66joint1
+      - cs66joint2
+      - cs66joint3
+      - cs66joint4
+      - cs66joint5
+      - cs66joint6
+    command_interfaces:
+      - position
+      - velocity
+    state_interfaces:
+      - position
+      - velocity
+    state_publish_rate: 100.0
+    action_monitor_rate: 20.0
+    allow_partial_joints_goal: false
+    constraints:
+      stopped_velocity_tolerance: 0.2
+      goal_time: 1.0
+      cs66joint1: { trajectory: 0.2, goal: 0.1 }
+      cs66joint2: { trajectory: 0.2, goal: 0.1 }
+      cs66joint3: { trajectory: 0.2, goal: 0.1 }
+      cs66joint4: { trajectory: 0.2, goal: 0.1 }
+      cs66joint5: { trajectory: 0.2, goal: 0.1 }
+      cs66joint6: { trajectory: 0.2, goal: 0.1 }
