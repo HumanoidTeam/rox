@@ -68,14 +68,15 @@
     <!-- Includes both Trike and Diff -->
     <xacro:if value="${rox_typ == 'diff'}">
         <xacro:include filename="$(find rox_description)/urdf/xacros/diff_drive.xacro" />
-        <xacro:diff_drive parent="base_link"/>
+        <xacro:property name="wheel_separation" value="0.634" />
+        <xacro:diff_drive parent="base_link" wheel_separation="${wheel_separation}"/>
     </xacro:if>
 
     <!-- Trike drive -->
     <xacro:if value="${rox_typ == 'trike'}">
         <xacro:include filename="$(find rox_description)/urdf/xacros/trike_drive.xacro" />
-        <xacro:trike_drive parent="base_link"/>
-        <xacro:property name="frame_len" value="-0.2435" />
+        <xacro:property name="wheel_separation" value="0.5955" />
+        <xacro:trike_drive parent="base_link" wheel_separation="${wheel_separation}"/>
     </xacro:if>
 
     <!-- Sensors -->

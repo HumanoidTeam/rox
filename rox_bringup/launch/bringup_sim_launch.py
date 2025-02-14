@@ -11,6 +11,7 @@ from launch.substitutions import ThisLaunchFileDir, LaunchConfiguration, Command
 from launch_ros.actions import Node
 from launch.launch_context import LaunchContext
 from launch.conditions import IfCondition
+from launch_ros.descriptions import ParameterValue
 import os
 from pathlib import Path
 import xacro
@@ -67,7 +68,7 @@ def execution_stage(context: LaunchContext,
         output='screen',
         parameters=[{
             'use_sim_time': True,  # Pass use_sim_time as True for simulation
-            'robot_description': Command([
+            'robot_description': ParameterValue(Command([
             "xacro", " ", urdf, " ", 'frame_type:=',
             frame_typ,
             " ", 'arm_type:=',
@@ -86,8 +87,8 @@ def execution_stage(context: LaunchContext,
             use_ur_dc,
             " ", 'force_abs_paths:=',
             "True"  # Pass force_abs_paths as True for simulation
-            ])}],
-        arguments=[urdf])
+            ]), value_type=str)}],
+    )
     
     teleop =  Node(
         package='teleop_twist_keyboard',
