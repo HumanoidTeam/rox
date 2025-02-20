@@ -96,7 +96,7 @@ def execution_stage(context: LaunchContext,
         output='screen',
         prefix = 'xterm -e',
         name='teleop',
-        parameters=[{'stamped': True}]  # Set stamped parameter to true for TwistStamped /cmd_vel
+        parameters=[{'stamped': False}]  # Set stamped parameter to true for TwistStamped /cmd_vel
     )
   
     gz_bridge = Node(
