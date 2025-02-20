@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="rox">
-
+  
   <xacro:macro name="gazebo_plugins">
     <gazebo reference="lidar_1_link">
       <sensor name="lidar_1_sensor" type="gpu_lidar">
@@ -8,7 +8,11 @@
         <pose>0 0 0 0 0 0</pose>
         <visualize>false</visualize>
         <update_rate>10</update_rate>
-        <ray>
+        <topic>scan</topic>
+        <!-- Set output to sensor_msgs/LaserScan to get same output type as gazebo_ros_laser -->
+        <output_type>sensor_msgs/LaserScan</output_type>
+        <gz_frame_id>lidar_1_link</gz_frame_id>
+        <lidar>
           <scan>
             <horizontal>
               <samples>720</samples>
@@ -31,11 +35,7 @@
             <mean>0.0</mean>
             <stddev>0.01</stddev>
           </noise>
-        </ray>
-        <topic>scan</topic>
-        <!-- Set output to sensor_msgs/LaserScan to get same output type as gazebo_ros_laser -->
-        <output_type>sensor_msgs/LaserScan</output_type>
-        <gz_frame_id>lidar_1_link</gz_frame_id>
+        </lidar>
       </sensor>
     </gazebo>
 
@@ -45,7 +45,11 @@
         <pose>0 0 0 0 0 0</pose>
         <visualize>false</visualize>
         <update_rate>10</update_rate>
-        <ray>
+        <topic>scan2</topic>
+        <!-- Set output to sensor_msgs/LaserScan to get same output type as gazebo_ros_laser -->
+        <output_type>sensor_msgs/LaserScan</output_type>
+        <gz_frame_id>lidar_2_link</gz_frame_id>
+        <lidar>
           <scan>
             <horizontal>
               <samples>720</samples>
@@ -68,11 +72,7 @@
             <mean>0.0</mean>
             <stddev>0.01</stddev>
           </noise>
-        </ray>
-        <topic>scan2</topic>
-        <!-- Set output to sensor_msgs/LaserScan to get same output type as gazebo_ros_laser -->
-        <output_type>sensor_msgs/LaserScan</output_type>
-        <gz_frame_id>lidar_2_link</gz_frame_id>
+        </lidar>
       </sensor>
     </gazebo>
 
@@ -114,7 +114,7 @@
           name="gz::sim::systems::DiffDrive">
           <left_joint>wheel_left_joint</left_joint>
           <right_joint>wheel_right_joint</right_joint>
-          <wheel_separation>0.555</wheel_separation>
+          <wheel_separation>${wheel_separation}</wheel_separation>
           <wheel_radius>0.075</wheel_radius>
           <max_linear_acceleration>1</max_linear_acceleration>
           <min_linear_acceleration>-1</min_linear_acceleration>
@@ -147,6 +147,63 @@
       
     </gazebo>
 
+    <!-- Gazebo macro for Argo Wheels -->
+    <xacro:macro name="rox_argo_wheel_gazebo_macro" params="name">
+      <gazebo reference="${name}_link">
+        <mu1>0.001</mu1>
+        <mu2>0.001</mu2>
+        <kp>100000.0</kp>
+        <kd>1.0</kd>
+        <minDepth>0.000</minDepth>
+        <fdir1>1 0 0</fdir1>
+      </gazebo>
+    </xacro:macro>
+
+    <!-- Gazebo macro for Differential Castor Wheels -->
+    <xacro:macro name="rox_caster_wheel_gazebo_macro" params="name">
+      <gazebo reference="${name}_link">
+        <mu1>0.001</mu1>
+        <mu2>0.001</mu2>
+      </gazebo>
+    </xacro:macro>
+
+    <!-- Gazebo macro for Differential Wheels -->
+    <xacro:macro name="rox_diff_wheel_gazebo_macro" params="name">
+      <gazebo reference="${name}_link">
+        <mu1>1.0</mu1>
+        <mu2>1.0</mu2>
+        <kp>1000000.0</kp>
+        <kd>1.0</kd>
+        <minDepth>0.000</minDepth>
+        <fdir1>1 0 0</fdir1>
+      </gazebo>
+    </xacro:macro>
+
+    <!--Argo Drive-->
+    <xacro:if value="${rox_typ == 'argo'}">
+      <xacro:rox_argo_wheel_gazebo_macro name="wheel_front_left"/>
+      <xacro:rox_argo_wheel_gazebo_macro name="wheel_front_right"/>
+      <xacro:rox_argo_wheel_gazebo_macro name="wheel_back_left"/>
+      <xacro:rox_argo_wheel_gazebo_macro name="wheel_back_right"/>
+    </xacro:if>
+
+    <!--Diff Drive-->
+    <xacro:if value="${rox_typ == 'diff'}">
+      <xacro:rox_diff_wheel_gazebo_macro name="wheel_left"/>
+      <xacro:rox_diff_wheel_gazebo_macro name="wheel_right"/>
+      <xacro:rox_caster_wheel_gazebo_macro name="caster_wheel_front_left"/>
+      <xacro:rox_caster_wheel_gazebo_macro name="caster_wheel_front_right"/>
+      <xacro:rox_caster_wheel_gazebo_macro name="caster_wheel_back_left"/>
+      <xacro:rox_caster_wheel_gazebo_macro name="caster_wheel_back_right"/>
+    </xacro:if>
+
+    <!--Trike Drive-->
+    <xacro:if value="${rox_typ == 'trike'}">
+      <xacro:rox_diff_wheel_gazebo_macro name="wheel_left"/>
+      <xacro:rox_diff_wheel_gazebo_macro name="wheel_right"/>
+      <xacro:rox_caster_wheel_gazebo_macro name="caster_back"/>
+    </xacro:if>
+
   </xacro:macro>
-  
 </robot>
+
