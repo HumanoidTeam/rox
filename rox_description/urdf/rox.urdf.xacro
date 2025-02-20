@@ -12,6 +12,8 @@
     <xacro:arg name="use_imu" default="false"/>
     <xacro:arg name="use_d435" default="false"/>
     <xacro:arg name="use_ur_dc" default="false"/>
+    <xacro:arg name="arm_parent" default="cabinet_link"/>
+    <xacro:arg name="force_abs_paths" default="false"/>
 
     <!-- Xacro Properties -->
     <xacro:property name="frame" value="$(arg frame_type)"/>
@@ -20,7 +22,7 @@
     <xacro:property name="scanner_typ" value="$(arg scanner)"/>
     <xacro:property name="arm" value="$(arg arm_type)"/>
     <xacro:property name="gz" value="$(arg use_gz)"/>
-    <xacro:property name="use_ur_arm" value="false"/>
+    <xacro:property name="use_arm" value="false"/>
     <xacro:property name="imu" value="$(arg use_imu)"/>
     <xacro:property name="d435" value="$(arg use_d435)"/>
     <xacro:property name="ur_dc" value="$(arg use_ur_dc)"/>
@@ -35,8 +37,8 @@
     <xacro:include filename="$(find rox_description)/urdf/xacros/pilz_psenscan.xacro" />
 
     <!-- checking if one of the UR arms is used -->
-    <xacro:if value="${arm == 'ur5' or arm == 'ur10' or arm == 'ur5e' or arm == 'ur10e'}">
-        <xacro:property name="use_ur_arm" value="true"/>
+    <xacro:if value="${arm == 'ur5' or arm == 'ur10' or arm == 'ur5e' or arm == 'ur10e' or arm == 'ec66' or arm == 'cs66'}">
+        <xacro:property name="use_arm" value="true"/>
     </xacro:if>
 
     <!-- Assigning Xacro properties -->
@@ -66,14 +68,15 @@
     <!-- Includes both Trike and Diff -->
     <xacro:if value="${rox_typ == 'diff'}">
         <xacro:include filename="$(find rox_description)/urdf/xacros/diff_drive.xacro" />
-        <xacro:diff_drive parent="base_link"/>
+        <xacro:property name="wheel_separation" value="0.634" />
+        <xacro:diff_drive parent="base_link" wheel_separation="${wheel_separation}"/>
     </xacro:if>
 
     <!-- Trike drive -->
     <xacro:if value="${rox_typ == 'trike'}">
         <xacro:include filename="$(find rox_description)/urdf/xacros/trike_drive.xacro" />
-        <xacro:trike_drive parent="base_link"/>
-        <xacro:property name="frame_len" value="-0.2435" />
+        <xacro:property name="wheel_separation" value="0.5955" />
+        <xacro:trike_drive parent="base_link" wheel_separation="${wheel_separation}"/>
     </xacro:if>
 
     <!-- Sensors -->
@@ -129,104 +132,39 @@
     </xacro:if>
 
     <!-- arm -->
-    <xacro:unless value="${arm == ''}">
-        <xacro:if value="${ur_dc == False}">
-            <xacro:property name="arm_height" value="0.46" />
-        </xacro:if>
-
-        <xacro:if value="${ur_dc == True}">
-            <xacro:property name="arm_height" value="0.276" />
-        </xacro:if>
-
+    <xacro:if value="${use_arm}">
+        <!-- include cabinet -->
         <xacro:include filename="$(find rox_description)/urdf/xacros/cabinet.xacro" />
         <xacro:cabinet name="cabinet" parent="base_footprint">
             <origin rpy="0 0 0" xyz="${frame_len} 0 0.33"/>
         </xacro:cabinet>
 
-        <xacro:if value="${use_ur_arm == True}">
-            <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro"/>
-            <xacro:include filename="$(find ur_robot_driver)/urdf/ur.ros2_control.xacro" />
-            <xacro:include filename="$(find ur_description)/urdf/inc/ur_transmissions.xacro" />
-            <xacro:arg name="tf_prefix" default="${arm}" />
-            <xacro:arg name="joint_limit_params" default="$(find ur_description)/config/$(arg arm_type)/joint_limits.yaml"/>
-            <xacro:arg name="kinematics_params" default="$(find ur_description)/config/$(arg arm_type)/default_kinematics.yaml"/>
-            <xacro:arg name="physical_params" default="$(find ur_description)/config/$(arg arm_type)/physical_parameters.yaml"/>
-            <xacro:arg name="visual_params" default="$(find ur_description)/config/$(arg arm_type)/visual_parameters.yaml"/>
-            <xacro:arg name="initial_positions_file" default="$(find ur_description)/config/initial_positions.yaml"/>
-            <xacro:arg name="transmission_hw_interface" default="hardware_interface/PositionJointInterface"/>
-            <xacro:arg name="safety_limits" default="true"/>
-            <xacro:arg name="safety_pos_margin" default="0.15"/>
-            <xacro:arg name="safety_k_position" default="20"/>
-            <xacro:arg name="force_abs_paths" default="false" />
-            <!-- ros2_control related parameters -->
-            <xacro:arg name="headless_mode" default="false" />
-            <xacro:arg name="robot_ip" default="192.168.1.102" />
-            <xacro:arg name="script_filename" default="$(find ur_client_library)/resources/external_control.urscript"/>
-            <xacro:arg name="output_recipe_filename" default="$(find ur_robot_driver)/resources/rtde_output_recipe.txt"/>
-            <xacro:arg name="input_recipe_filename" default="$(find ur_robot_driver)/resources/rtde_input_recipe.txt"/>
-            <xacro:arg name="reverse_ip" default="0.0.0.0"/>
-            <xacro:arg name="script_command_port" default="50004"/>
-            <xacro:arg name="reverse_port" default="50001"/>
-            <xacro:arg name="script_sender_port" default="50002"/>
-            <xacro:arg name="trajectory_port" default="50003"/>
-            <!--   tool communication related parameters-->
-            <xacro:arg name="use_tool_communication" default="false" />
-            <xacro:arg name="tool_voltage" default="0" />
-            <xacro:arg name="tool_parity" default="0" />
-            <xacro:arg name="tool_baud_rate" default="115200" />
-            <xacro:arg name="tool_stop_bits" default="1" />
-            <xacro:arg name="tool_rx_idle_chars" default="1.5" />
-            <xacro:arg name="tool_tx_idle_chars" default="3.5" />
-            <xacro:arg name="tool_device_name" default="/tmp/ttyUR" />
-            <xacro:arg name="tool_tcp_port" default="54321" />
+        <!-- Universal Robotics (UR) Arms-->
+        <xacro:if value="${arm == 'ur5' or arm == 'ur10' or arm == 'ur5e' or arm == 'ur10e'}">
+            <xacro:if value="${ur_dc == False}">
+                <!-- Different height for AC arm-->
+                <xacro:property name="arm_height" value="0.376" />
+            </xacro:if>
 
-            <xacro:property name="initial_positions_file" default="$(arg initial_positions_file)"/>
+            <xacro:if value="${ur_dc == True}">
+                <xacro:property name="arm_height" value="0.276" />
+            </xacro:if>
 
-            <xacro:ur_robot name="${arm}"
-                parent="cabinet_link"
-                tf_prefix="$(arg tf_prefix)"
-                joint_limits_parameters_file="$(arg joint_limit_params)"
-                kinematics_parameters_file="$(arg kinematics_params)"
-                physical_parameters_file="$(arg physical_params)"
-                visual_parameters_file="$(arg visual_params)"
-                safety_limits="$(arg safety_limits)"
-                safety_pos_margin="$(arg safety_pos_margin)"
-                safety_k_position="$(arg safety_k_position)"
-                >
-                <!-- position robot in the world -->
-                <origin xyz="0.218 0.0 ${arm_height}" rpy="0.0 0.0 3.1415926535897931" />
-            </xacro:ur_robot>
-            <xacro:ur_ros2_control
-                name="ur10e"
-                tf_prefix="$(arg tf_prefix)"
-                kinematics_parameters_file="$(arg kinematics_params)"
-                transmission_hw_interface="$(arg transmission_hw_interface)"
-                headless_mode="$(arg headless_mode)"
-                initial_positions="${xacro.load_yaml(initial_positions_file)}"
-                use_tool_communication="$(arg use_tool_communication)"
-                tool_voltage="$(arg tool_voltage)"
-                tool_parity="$(arg tool_parity)"
-                tool_baud_rate="$(arg tool_baud_rate)"
-                tool_stop_bits="$(arg tool_stop_bits)"
-                tool_rx_idle_chars="$(arg tool_rx_idle_chars)"
-                tool_tx_idle_chars="$(arg tool_tx_idle_chars)"
-                tool_device_name="$(arg tool_device_name)"
-                tool_tcp_port="$(arg tool_tcp_port)"
-                robot_ip="$(arg robot_ip)"
-                script_filename="$(arg script_filename)"
-                output_recipe_filename="$(arg output_recipe_filename)"
-                input_recipe_filename="$(arg input_recipe_filename)"
-                reverse_ip="$(arg reverse_ip)"
-                script_command_port="$(arg script_command_port)"
-                reverse_port="$(arg reverse_port)"
-                script_sender_port="$(arg script_sender_port)"
-                trajectory_port="$(arg trajectory_port)"
-            />
+            <xacro:include filename="$(find rox_description)/urdf/xacros/ur_arm.urdf.xacro"/>
         </xacro:if>
-    </xacro:unless>
+
+        <!-- Elite Arms-->
+        <xacro:if value="${arm == 'ec66' or arm == 'cs66'}">
+            <xacro:property name="arm_height" value="0.376" />
+            <xacro:include filename="$(find rox_description)/urdf/xacros/elite_arm.urdf.xacro"/>
+        </xacro:if>
+    </xacro:if>
+
     <!-- Check if simulation needs to be used -->
     <xacro:if value="${gz == True}">
         <xacro:include filename="$(find rox_description)/urdf/xacros/gazebo.xacro" />
         <xacro:gazebo_plugins />
     </xacro:if>
+
 </robot>
+
