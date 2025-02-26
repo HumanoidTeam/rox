@@ -102,6 +102,17 @@ ros2 launch neo_rox_moveit2 neo_ur_moveit.launch.py arm_type:=ur10 use_sim_time:
 
 ## **Changelog**
 
+### **[Date: 2025-02-26]**
+
+#### **rox_description**
+
+- Cannot update ur_arm.xacro to conditionally include ur_robot_driver only for real robot since needed since gz sim also uses the same ur_ros2_control xacro macro from ur_robot_driver pkg.
+- Removed neo_gz_worlds and rox_description dependencies from rox_bringup package.xml.
+
+#### **rox_bringup**
+
+- Conditionally added elite_description to the environment variable only if an Elite arm is in use-> in bringup_sim_launch.py. Tested the same.
+---
 ### **[Date: 2025-02-14]**
 
 #### **rox_description**
@@ -143,5 +154,3 @@ rox_type options: argo, diff, trike
 #### **General**
 - Updated dependencies.
 - Packages restructuring.
-
-
