@@ -26,13 +26,10 @@
             
             <!-- Load parameters from YAML file -->
             <xacro:property 
-                name="initial_positions_params" 
+                name="elite_initial_positions" 
                 value="${xacro.load_yaml('$(arg initial_joint_positions_file)')}"
             />
             
-            <!-- Extract subsection from yaml dictionaries -->
-            <xacro:property name="elite_initial_positions" value="${initial_positions_params['initial_positions']}"/>
-        
             <!--create arm from macro-->
             <xacro:elite_robot 
                 name="$(arg arm_type)"
@@ -70,6 +67,7 @@
                     tf_prefix="$(arg tf_prefix)" 
                     plugin="gz_ros2_control/GazeboSimSystem"
                     parameters="$(arg simulation_controllers)"
+                    initial_positions="${elite_initial_positions}"
                 />
             </xacro:if>
             <!-- include robotiq gripper-->

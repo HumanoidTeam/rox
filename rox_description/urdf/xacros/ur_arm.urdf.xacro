@@ -7,8 +7,8 @@
   -->
             <!-- create arm from macro-->
             <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro"/>
-            <xacro:include filename="$(find ur_robot_driver)/urdf/ur.ros2_control.xacro" />
-            <xacro:include filename="$(find ur_description)/urdf/inc/ur_transmissions.xacro" />
+            <xacro:include filename="$(find ur_robot_driver)/urdf/ur.ros2_control.xacro"/>
+            <xacro:include filename="$(find ur_description)/urdf/inc/ur_transmissions.xacro"/>
 
             <!-- Set use_gz = true for simulation -->
             <xacro:arg name="use_gz" default="false"/>
@@ -28,27 +28,6 @@
             <xacro:arg name="safety_limits" default="false"/>
             <xacro:arg name="safety_pos_margin" default="0.15"/>
             <xacro:arg name="safety_k_position" default="20"/>
-            <!-- ros2_control related parameters -->
-            <xacro:arg name="headless_mode" default="false" />
-            <xacro:arg name="robot_ip" default="192.168.1.102" />
-            <xacro:arg name="script_filename" default="$(find ur_client_library)/resources/external_control.urscript"/>
-            <xacro:arg name="output_recipe_filename" default="$(find ur_robot_driver)/resources/rtde_output_recipe.txt"/>
-            <xacro:arg name="input_recipe_filename" default="$(find ur_robot_driver)/resources/rtde_input_recipe.txt"/>
-            <xacro:arg name="reverse_ip" default="0.0.0.0"/>
-            <xacro:arg name="script_command_port" default="50004"/>
-            <xacro:arg name="reverse_port" default="50001"/>
-            <xacro:arg name="script_sender_port" default="50002"/>
-            <xacro:arg name="trajectory_port" default="50003"/>
-            <!-- tool communication related parameters-->
-            <xacro:arg name="use_tool_communication" default="false" />
-            <xacro:arg name="tool_voltage" default="0" />
-            <xacro:arg name="tool_parity" default="0" />
-            <xacro:arg name="tool_baud_rate" default="115200" />
-            <xacro:arg name="tool_stop_bits" default="1" />
-            <xacro:arg name="tool_rx_idle_chars" default="1.5" />
-            <xacro:arg name="tool_tx_idle_chars" default="3.5" />
-            <xacro:arg name="tool_device_name" default="/tmp/ttyUR" />
-            <xacro:arg name="tool_tcp_port" default="54321" />
 
             <!-- initial positions file for ur arm on rox-->
             <xacro:arg name="initial_positions_file" default="$(find rox_bringup)/configs/ur/initial_joint_positions.yaml"/>
@@ -82,6 +61,29 @@
 
             <!-- this condition is to ensure that ros2_control doesn't interfere with gz_ros2_control during simulation  -->
             <xacro:unless value="$(arg use_gz)">
+            
+                <!-- ros2_control related parameters -->
+                <xacro:arg name="headless_mode" default="false" />
+                <xacro:arg name="robot_ip" default="192.168.1.102" />
+                <xacro:arg name="script_filename" default="$(find ur_client_library)/resources/external_control.urscript"/>
+                <xacro:arg name="output_recipe_filename" default="$(find ur_robot_driver)/resources/rtde_output_recipe.txt"/>
+                <xacro:arg name="input_recipe_filename" default="$(find ur_robot_driver)/resources/rtde_input_recipe.txt"/>
+                <xacro:arg name="reverse_ip" default="0.0.0.0"/>
+                <xacro:arg name="script_command_port" default="50004"/>
+                <xacro:arg name="reverse_port" default="50001"/>
+                <xacro:arg name="script_sender_port" default="50002"/>
+                <xacro:arg name="trajectory_port" default="50003"/>
+                <!-- tool communication related parameters-->
+                <xacro:arg name="use_tool_communication" default="false" />
+                <xacro:arg name="tool_voltage" default="0" />
+                <xacro:arg name="tool_parity" default="0" />
+                <xacro:arg name="tool_baud_rate" default="115200" />
+                <xacro:arg name="tool_stop_bits" default="1" />
+                <xacro:arg name="tool_rx_idle_chars" default="1.5" />
+                <xacro:arg name="tool_tx_idle_chars" default="3.5" />
+                <xacro:arg name="tool_device_name" default="/tmp/ttyUR" />
+                <xacro:arg name="tool_tcp_port" default="54321" />
+                
                 <xacro:ur_ros2_control
                     name="$(arg arm_type)"
                     tf_prefix="$(arg tf_prefix)"

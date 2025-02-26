@@ -117,13 +117,17 @@ def execution_stage(context: LaunchContext,
         executable="spawner",
         arguments=[initial_joint_controller_name, "-c", "/controller_manager"],
     )
-
-    set_env_vars_resources = AppendEnvironmentVariable(
-        'GZ_SIM_RESOURCE_PATH',
-        os.path.join(get_package_share_directory('neo_gz_worlds'), 'models') + ':' +
-        # Use dirname to include the parent directory of rox_description
+    env_var_value = (
+        os.path.join(get_package_share_directory('neo_gz_worlds'), 'models') +
+        ':' +
         os.path.dirname(get_package_share_directory('rox_description'))
     )
+
+    if arm_typ == 'ec66' or arm_typ == 'cs66':
+        env_var_value += ':' + os.path.dirname(get_package_share_directory('elite_description'))
+
+    # Set environment variable
+    set_env_vars_resources = AppendEnvironmentVariable('GZ_SIM_RESOURCE_PATH', env_var_value)
 
     launch_actions = [set_env_vars_resources, start_robot_state_publisher_cmd, gz_sim, gz_bridge, teleop, spawn_robot]
 
@@ -141,7 +145,7 @@ def generate_launch_description():
     
     declare_rox_type_cmd = DeclareLaunchArgument(
             'rox_type', default_value='argo',
-            description='Robot type - Options: argo/diff/trike/meca'
+            description='Robot type - Options: argo/diff/trike'
         )
 
     declare_imu_cmd = DeclareLaunchArgument(
