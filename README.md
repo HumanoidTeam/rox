@@ -48,15 +48,8 @@ ros2 launch rox_bringup bringup_sim_launch.py --show-args
     Robot controller to start:
         Elite Arms: arm_controller
         Universal Robotics (UR): joint_trajectory_controller, scaled_joint_trajectory_controller
+        (default: 'scaled_joint_trajectory_controller')
 ```
-
-## **Note**
-For simulation, set:
-```yaml
-speed_scaling_interface_name: ""
-```
-This setting is commented in every UR arm `ur_controllers.yaml` file under `rox_bringup/configs/ur/`.
-
 ## **Navigation Commands**
 
 Start navigation:
@@ -68,6 +61,13 @@ Start RViz for visualization:
 ```sh
 ros2 launch neo_nav2_bringup rviz_launch.py
 ```
+## **NOTE!!**
+For simulation, set:
+```yaml
+speed_scaling_interface_name: ""
+```
+This setting is commented in every UR arm `ur_controllers.yaml` file under `rox_bringup/configs/ur/`.
+
 
 ## **MoveIt2 Simulation**
 
@@ -77,80 +77,3 @@ ros2 launch neo_rox_moveit2 neo_ur_moveit.launch.py arm_type:=ur10 use_sim_time:
 ```
 
 ---
-
-## **Changes in This Update**
-
-### **rox_description**
-- Updated `gazebo.xacro` for migration to Modern Gazebo (Ionic).
-- Added modular URDF xacros for `ur_arm` and `elite_arm`.
-- Refactored `rox.urdf.xacro` to be modular.
-
-### **rox_bringup**
-- Added ROS 2 Control and Joint Trajectory Controller configurations for UR and Elite arms.
-- Updated `gz_bridge_config.yaml` to support the Modern Gazebo migration and updated /cmd_vel message type.
-- Modified `bringup_sim_launch.py` to accommodate the new URDF format and include necessary ROS 2 Control nodes for arms.
-- Updated the teleop publish message type for /cmd_vel topic.
-- Added model paths to `GZ_SIM_RESOURCE_PATH` env variable in launch file.
-- Set use ac/dc parameter in simulation launch file and updated arm position(height) on cabinet for ac variant
-- UR arm urdf in `ur_description` package for rolling is different from the iron distro. So this package was  adapted to those changes and appropriate packages were used.
-
-### **General**
-- Updated dependencies.
-- Packages restucturing.
-
----
-
-## **Changelog**
-
-### **[Date: 2025-02-26]**
-
-#### **rox_description**
-
-- Cannot update ur_arm.xacro to conditionally include ur_robot_driver only for real robot since needed since gz sim also uses the same ur_ros2_control xacro macro from ur_robot_driver pkg.
-- Removed neo_gz_worlds and rox_description dependencies from rox_bringup package.xml.
-
-#### **rox_bringup**
-
-- Conditionally added elite_description to the environment variable only if an Elite arm is in use-> in bringup_sim_launch.py. Tested the same.
----
-### **[Date: 2025-02-14]**
-
-#### **rox_description**
-
-
-- Resolved movement issues in Argo drive in Gazebo where it did not respond to teleop velocities lower than 0.03 m/s → Issue #47.
-- Adjusted the positions of various robot components in the URDF to align with the mechanical documentation.
-- Added dynamic properties to wheels and joints for more accurate simulation.
-- Fine-tuned those dynamic properties.
-- Fixed stability issues with the robot when the arm is mounted.
-- Thoroughly tested the /odom and /cmd_vel topics to ensure the robot responds correctly to the given velocities.
-- Refactored URDF structure to accommodate the above changes.
-- Documented updates in CHANGELOG.
-
-To run and test the changes:
-```sh
-ros2 launch rox_bringup bringup_sim_launch.py rox_type:=argo arm_type:=ur10
-```
-rox_type options: argo, diff, trike
-
----
-
-### **[Date: 2025-02-04]**
-
-#### **rox_description**
-- Updated `gazebo.xacro` for migration to Modern Gazebo (Ionic).
-- Added modular URDF xacros for `ur_arm` and `elite_arm`.
-- Refactored `rox.urdf.xacro` to be modular.
-
-#### **rox_bringup**
-- Added ROS 2 Control and Joint Trajectory Controller configurations for UR and Elite arms.
-- Updated `gz_bridge_config.yaml` to support the Modern Gazebo migration and updated /cmd_vel message type.
-- Modified `bringup_sim_launch.py` to accommodate the new URDF format and include necessary ROS 2 Control nodes for arms.
-- Updated the teleop publish message type for /cmd_vel topic.
-- Added model paths to `GZ_SIM_RESOURCE_PATH` env variable in launch file.
-- Set use ac/dc parameter in simulation launch file and updated arm position(height) on cabinet for ac variant.
-- UR arm urdf in `ur_description` package for rolling is different from the iron distro. So this package was adapted to those changes and appropriate packages were used.
-
-#### **General**
-- Updated dependencies.
-- Packages restructuring.
