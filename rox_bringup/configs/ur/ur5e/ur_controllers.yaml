@@ -107,10 +107,10 @@ scaled_joint_trajectory_controller:
       ur5ewrist_3_joint: { trajectory: 0.2, goal: 0.1 }
 
     # Use this for real robot
-    # speed_scaling_interface_name: ur5espeed_scaling/speed_scaling_factor
+    speed_scaling_interface_name: ur5espeed_scaling/speed_scaling_factor
 
     # Use this for simulation
-    speed_scaling_interface_name: ""
+    # speed_scaling_interface_name: ""
 
 forward_velocity_controller:
   ros__parameters:
