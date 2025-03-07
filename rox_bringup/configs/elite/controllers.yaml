@@ -12,12 +12,12 @@ controller_manager:
 arm_controller:
   ros__parameters:
     joints:
-      - cs66joint1
-      - cs66joint2
-      - cs66joint3
-      - cs66joint4
-      - cs66joint5
-      - cs66joint6
+      - $(var arm_type)joint1
+      - $(var arm_type)joint2
+      - $(var arm_type)joint3
+      - $(var arm_type)joint4
+      - $(var arm_type)joint5
+      - $(var arm_type)joint6
     command_interfaces:
       - position
       - velocity
@@ -30,9 +30,9 @@ arm_controller:
     constraints:
       stopped_velocity_tolerance: 0.2
       goal_time: 1.0
-      cs66joint1: { trajectory: 0.2, goal: 0.1 }
-      cs66joint2: { trajectory: 0.2, goal: 0.1 }
-      cs66joint3: { trajectory: 0.2, goal: 0.1 }
-      cs66joint4: { trajectory: 0.2, goal: 0.1 }
-      cs66joint5: { trajectory: 0.2, goal: 0.1 }
-      cs66joint6: { trajectory: 0.2, goal: 0.1 }
+      $(var arm_type)joint1: { trajectory: 0.2, goal: 0.1 }
+      $(var arm_type)joint2: { trajectory: 0.2, goal: 0.1 }
+      $(var arm_type)joint3: { trajectory: 0.2, goal: 0.1 }
+      $(var arm_type)joint4: { trajectory: 0.2, goal: 0.1 }
+      $(var arm_type)joint5: { trajectory: 0.2, goal: 0.1 }
+      $(var arm_type)joint6: { trajectory: 0.2, goal: 0.1 }

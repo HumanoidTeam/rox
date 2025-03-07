@@ -14,7 +14,7 @@
     <xacro:arg name="use_ur_dc" default="false"/>
     <xacro:arg name="arm_parent" default="cabinet_link"/>
     <xacro:arg name="force_abs_paths" default="false"/>
-
+    <xacro:arg name="simulation_controllers" default=""/>
     <!-- Xacro Properties -->
     <xacro:property name="frame" value="$(arg frame_type)"/>
     <xacro:property name="rox_typ" default="$(arg rox_type)"/>

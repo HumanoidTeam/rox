@@ -114,8 +114,9 @@
 
             <!-- If gz simulation is used -->
             <xacro:if value="$(arg use_gz)">
-                
-                <xacro:arg name="simulation_controllers" default="$(find rox_bringup)/configs/ur/$(arg arm_type)/ur_controllers.yaml"/>
+            
+                <!-- simulation controllers will be passed from launch file after substitutions -->
+                <xacro:arg name="simulation_controllers" default=""/>
 
                 <gazebo reference="$(arg arm_parent)">
                 </gazebo>

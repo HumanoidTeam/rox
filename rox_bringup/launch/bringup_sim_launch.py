@@ -5,13 +5,13 @@
 import launch
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, ExecuteProcess, OpaqueFunction, AppendEnvironmentVariable
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction, AppendEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import ThisLaunchFileDir, LaunchConfiguration, Command, PathJoinSubstitution, FindExecutable, PythonExpression
+from launch.substitutions import LaunchConfiguration, Command
 from launch_ros.actions import Node
 from launch.launch_context import LaunchContext
-from launch.conditions import IfCondition
 from launch_ros.descriptions import ParameterValue
+from param_file_utils import generate_final_yaml
 import os
 from pathlib import Path
 import xacro
@@ -22,9 +22,10 @@ def execution_stage(context: LaunchContext,
                     arm_type, 
                     d435_enable, 
                     imu_enable, 
-                    ur_dc,
-                    initial_joint_controller):
+                    ur_dc):
     
+    launch_actions = []
+
     default_world_path = os.path.join(get_package_share_directory('neo_gz_worlds'), 'worlds', 'neo_workshop.sdf')
     bridge_config_file = os.path.join(get_package_share_directory('rox_bringup'), 'configs/gz_bridge', 'gz_bridge_config.yaml')
     frame_typ = str(frame_type.perform(context))
@@ -33,7 +34,6 @@ def execution_stage(context: LaunchContext,
     d435 = str(d435_enable.perform(context))
     imu = str(imu_enable.perform(context))
     use_ur_dc = str(ur_dc.perform(context))
-    initial_joint_controller_name = str(initial_joint_controller.perform(context))
     joint_type = "fixed"
 
     if (rox_typ == "meca"):
@@ -61,6 +61,36 @@ def execution_stage(context: LaunchContext,
         , launch_arguments={'gz_args': ['-r ', default_world_path]}.items()
       )
 
+    arm_manufacturer = None
+    initial_joint_controller_name = "joint_trajectory_controller"
+    if arm_typ:
+        if arm_typ in ['ec66', 'cs66']:
+            arm_manufacturer = 'elite'
+            initial_joint_controller_name = 'arm_controller'
+        elif arm_typ in ['ur5', 'ur10', 'ur5e', 'ur10e']:
+            arm_manufacturer = 'ur'
+
+    if arm_manufacturer is not None:
+        controllers_yaml = os.path.join(
+            get_package_share_directory('rox_bringup'),
+            'configs', 
+            arm_manufacturer, 
+            'controllers.yaml'
+        )
+
+        # Generates a final YAML parameter file from the controllers template (with substitutions applied),
+        # and returns file_path, shutdown_handler
+        simulation_controllers, shutdown_handler = generate_final_yaml(
+            context,
+            controllers_yaml,
+            file_name='simulation_controllers.yaml',
+            cleanup_enabled=False
+        )
+        launch_actions.extend(shutdown_handler)
+
+    else:
+        simulation_controllers = ""
+
     start_robot_state_publisher_cmd = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
@@ -86,7 +116,9 @@ def execution_stage(context: LaunchContext,
             " ", 'use_ur_dc:=',
             use_ur_dc,
             " ", 'force_abs_paths:=',
-            "True"  # Pass force_abs_paths as True for simulation
+            "True",  # Pass force_abs_paths as True for simulation
+            " ",  'simulation_controllers:=',
+            simulation_controllers,
             ]), value_type=str)}],
     )
     
@@ -117,6 +149,7 @@ def execution_stage(context: LaunchContext,
         executable="spawner",
         arguments=[initial_joint_controller_name, "-c", "/controller_manager"],
     )
+
     env_var_value = (
         os.path.join(get_package_share_directory('neo_gz_worlds'), 'models') +
         ':' +
@@ -129,7 +162,12 @@ def execution_stage(context: LaunchContext,
     # Set environment variable
     set_env_vars_resources = AppendEnvironmentVariable('GZ_SIM_RESOURCE_PATH', env_var_value)
 
-    launch_actions = [set_env_vars_resources, start_robot_state_publisher_cmd, gz_sim, gz_bridge, teleop, spawn_robot]
+    launch_actions.append(set_env_vars_resources)
+    launch_actions.append(start_robot_state_publisher_cmd)
+    launch_actions.append(gz_sim)
+    launch_actions.append(gz_bridge)
+    launch_actions.append(teleop)
+    launch_actions.append(spawn_robot)
 
     if arm_typ != '':
         launch_actions.append(joint_state_broadcaster_spawner)
@@ -170,22 +208,13 @@ def generate_launch_description():
             description='Set this argument to True if you have an UR arm with DC variant'
         )
 
-    declare_initial_joint_controller_cmd = DeclareLaunchArgument(
-            'initial_joint_controller',
-            default_value='scaled_joint_trajectory_controller',
-            description='Robot controller to start:\n'
-                        '\t Elite Arms: arm_controller\n'
-                        '\t Universal Robotics (UR): joint_trajectory_controller,scaled_joint_trajectory_controller'
-        )
-
     opq_function = OpaqueFunction(function=execution_stage,
                                   args=[LaunchConfiguration('frame_type'),
                                         LaunchConfiguration('rox_type'),
                                         LaunchConfiguration('arm_type'),
                                         LaunchConfiguration('d435_enable'),
                                         LaunchConfiguration('imu_enable'),
-                                        LaunchConfiguration('use_ur_dc'),
-                                        LaunchConfiguration('initial_joint_controller')
+                                        LaunchConfiguration('use_ur_dc')
                                         ])
     
     ld = LaunchDescription([
@@ -195,7 +224,6 @@ def generate_launch_description():
         declare_frame_type_cmd,
         declare_rox_type_cmd,
         declare_ur_pwr_variant_cmd,
-        declare_initial_joint_controller_cmd,
         opq_function
     ])
     return ld
