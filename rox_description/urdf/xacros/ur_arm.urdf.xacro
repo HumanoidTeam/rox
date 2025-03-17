@@ -84,6 +84,9 @@
                 <xacro:arg name="tool_device_name" default="/tmp/ttyUR" />
                 <xacro:arg name="tool_tcp_port" default="54321" />
                 
+                <xacro:arg name="use_mock_hardware" default="false" />
+                <xacro:arg name="mock_sensor_commands" default="false" />
+
                 <xacro:ur_ros2_control
                     name="$(arg arm_type)"
                     tf_prefix="$(arg tf_prefix)"
@@ -109,6 +112,8 @@
                     reverse_port="$(arg reverse_port)"
                     script_sender_port="$(arg script_sender_port)"
                     trajectory_port="$(arg trajectory_port)"
+                    use_mock_hardware="$(arg use_mock_hardware)"
+                    mock_sensor_commands="$(arg mock_sensor_commands)"
                 />
             </xacro:unless>
 

@@ -15,6 +15,8 @@
     <xacro:arg name="arm_parent" default="cabinet_link"/>
     <xacro:arg name="force_abs_paths" default="false"/>
     <xacro:arg name="simulation_controllers" default=""/>
+    <xacro:arg name="use_mock_hardware" default="false" />
+    <xacro:arg name="mock_sensor_commands" default="false" />
     <!-- Xacro Properties -->
     <xacro:property name="frame" value="$(arg frame_type)"/>
     <xacro:property name="rox_typ" default="$(arg rox_type)"/>
