@@ -21,21 +21,24 @@ def execution_stage(
         context: LaunchContext,
         rox_type, use_sim_time,
         autostart, namespace, use_multi_robots,
-        head_robot, use_amcl, map_dir, param_dir):
+        head_robot, use_amcl, map_dir, param_dir, use_rviz):
     
     launches = []
 
     rox_typ = str(rox_type.perform(context))
-    params = param_dir
-    kinematics_type = "omni"
+    params = str(param_dir.perform(context))
     
+    # Set the kinematics type based on the robot type
+    kinematics_type = "omni"
     if (rox_typ == "diff" or rox_typ == "trike"):
         kinematics_type = "diff"
 
-    params = os.path.join(
-            get_package_share_directory('rox_navigation'),
-            'configs',
-            'navigation_' + kinematics_type + ".yaml")
+    # If the parameter file is not provided, use the default one based on the robot type
+    if not params:
+        params = os.path.join(
+                get_package_share_directory('rox_navigation'),
+                'configs',
+                'navigation_' + kinematics_type + ".yaml")
    
     nav2_launch_file_dir = os.path.join(get_package_share_directory('neo_nav2_bringup'), 'launch')
 
@@ -69,7 +72,9 @@ def execution_stage(
             PythonLaunchDescriptionSource([nav2_launch_file_dir, '/navigation_neo.launch.py']),
             launch_arguments={'namespace': namespace,
                               'use_sim_time': use_sim_time,
-                              'params_file': params}.items()),
+                              'params_file': params,
+                              'use_rviz': use_rviz,
+                              }.items()),
     ])
 
     # Start map_server if this robot is assigned as the head robot and if there is no multi-robot,
@@ -113,6 +118,7 @@ def generate_launch_description():
     rox_type = LaunchConfiguration('rox_type')
     map_dir = LaunchConfiguration('map')
     param_dir = LaunchConfiguration('nav2_params_file')
+    use_rviz = LaunchConfiguration('use_rviz')
     
     declare_rox_type_cmd = DeclareLaunchArgument(
             'rox_type', default_value='argo',
@@ -158,11 +164,14 @@ def generate_launch_description():
         )
     
     declare_nav2_param_file_cmd = DeclareLaunchArgument(
-            'nav2_params_file', default_value=os.path.join(
-                get_package_share_directory('rox_navigation'),
-                'configs',
-                'navigation_short_frame.yaml'),
-            description='Full path to the Nav2 parameters file to load'
+            'nav2_params_file', default_value="",
+            description='Full path to the Nav2 parameters file to load.\n'
+                        '\tLeave empty to use the default file based on the robot type'
+        )
+    
+    declare_use_rviz_cmd = DeclareLaunchArgument(
+            'use_rviz', default_value='True',
+            description='Launch RViz for visualization'
         )
     
     # Adding all the necessary launch description actions
@@ -175,9 +184,10 @@ def generate_launch_description():
     launch_desc.add_action(declare_use_amcl_cmd)
     launch_desc.add_action(declare_map_cmd)
     launch_desc.add_action(declare_nav2_param_file_cmd)
+    launch_desc.add_action(declare_use_rviz_cmd)
 
     context_arguments = [rox_type, use_sim_time, autostart, namespace,
-                         use_multi_robots, head_robot, use_amcl, map_dir, param_dir]
+                         use_multi_robots, head_robot, use_amcl, map_dir, param_dir, use_rviz]
 
     opq_function = OpaqueFunction(function=execution_stage, args=context_arguments)
 
