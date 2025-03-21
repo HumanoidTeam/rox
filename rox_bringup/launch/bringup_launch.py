@@ -18,35 +18,32 @@ import xacro
 
 def execution_stage(context: LaunchContext,
                     robot_namespace,
-                    frame_type,
                     rox_type,
                     arm_type,
                     scanner_type,
                     use_imu,
                     ur_dc,
                     mock_arm,
-                    initial_joint_controller,
-                    robot_ip):
+                    ):
     
     rox = get_package_share_directory('rox_bringup')
 
-    frame_typ = str(frame_type.perform(context))
     arm_typ = str(arm_type.perform(context))
     rox_typ = str(rox_type.perform(context))
     scanner_typ = str(scanner_type.perform(context))
     imu_enable = str(use_imu.perform(context))
     use_ur_dc = ur_dc.perform(context)
     use_mock = str(mock_arm.perform(context))
+    joint_type = "revolute"
+
+    if use_mock:
+        joint_type = "fixed"
 
     launches = []
     
     rp_ns = ""
     if (robot_namespace.perform(context) != "/"):
         rp_ns = robot_namespace.perform(context) + "/"
-
-    if (rox_typ == "meca"):
-        frame_typ = "long"
-        print("Meca only supports long frame")   
     
     urdf = os.path.join(get_package_share_directory('rox_description'), 'urdf', 'rox.urdf.xacro')
 
@@ -57,24 +54,133 @@ def execution_stage(context: LaunchContext,
         output='screen',
         parameters=[{
             'robot_description': Command([
-            "xacro", " ", urdf, " ", 'frame_type:=',
-            frame_typ,
-            " ", 'arm_type:=',
-            arm_typ,
-            " ", 'rox_type:=',
-            rox_typ,
-            " ", 'use_mock_hardware:=',
-            use_mock, #experimental
-            " ", 'scanner:=',
-            scanner_typ,
-            " ", 'use_imu:=',
-            imu_enable,
-            " ", 'use_ur_dc:=',
-            use_ur_dc, " joint_type:=revolute"
-            ]), 'frame_prefix': rp_ns}],
-        arguments=[urdf])
+                "xacro", " ", urdf,
+                " ", 'arm_type:=', arm_typ,
+                " ", 'rox_type:=', rox_typ,
+                " ", 'use_mock_hardware:=', use_mock,  # experimental
+                " ", 'scanner:=', scanner_typ,
+                " ", 'use_imu:=', imu_enable,
+                " ", 'use_ur_dc:=', use_ur_dc,
+                " ", 'joint_type:=', joint_type,
+            ]),
+            'frame_prefix': rp_ns
+        }],
+        arguments=[urdf]
+    )
     
     launches.append(start_robot_state_publisher_cmd)
+
+    # 1. Relayboard
+    relayboard = Node(
+        package='neo_relayboard_v3', 
+        executable='relayboardv3_node',
+        output='screen',
+        name='neo_relayboard_v3_node',
+        parameters = [
+            {"pilot_config": "/home/neobotix/ros2_workspace/src/rox/rox_bringup/configs/neo_relayboard_v3/rox-" + rox_typ + "/"}
+        ],
+        condition=UnlessCondition(mock_arm)
+    )
+    
+    launches.append(relayboard)
+                    
+    # 2. Kinematics
+    if (rox_typ == "argo"):
+        kinematics = Node(
+            package='rox_argo_kinematics',
+            executable='rox_argo_kinematics_node',
+            output='screen',
+            name='argo_kinematics_node',
+            parameters = [os.path.join(rox,'configs/kinematics', f'{rox_typ}_kinematics.yaml')],
+            condition=UnlessCondition(mock_arm)
+        )
+
+        launches.append(kinematics)
+    
+    if (rox_typ == "diff"):
+        kinematics = Node(
+            package='rox_diff_kinematics',
+            executable='rox_diff_kinematics_node',
+            output='screen',
+            name='diff_kinematics_node',
+            parameters = [os.path.join(rox,'configs/kinematics', f'{rox_typ}_kinematics.yaml')],
+            condition=UnlessCondition(mock_arm)
+        )
+
+        launches.append(kinematics)
+
+    # 3. Teleop
+    teleop = Node(
+        package='neo_teleop2',
+        executable='neo_teleop2_node',
+        output='screen',
+        name='neo_teleop2_node',
+        parameters = [os.path.join(rox,'configs/teleop', f'{rox_typ}_teleop.yaml')],
+        condition=UnlessCondition(mock_arm)
+    )
+
+    launches.append(teleop)
+
+    # Joy
+    joy = Node(
+            package='joy', 
+            executable='joy_node', 
+            output='screen',
+            name='joy_node',
+            parameters = [{'dev': "/dev/input/js0"}, {'deadzone':0.12}],
+            condition=UnlessCondition(mock_arm)
+        )
+
+    launches.append(joy)
+
+    # 4. Laser - Nanoscan
+    if scanner_typ == "nanoscan":
+        scan1 = Node(
+                package="sick_safetyscanners2",
+                executable="sick_safetyscanners2_node",
+                name="lidar_1_node",
+                output="screen",
+                emulate_tty=True,
+                parameters=[os.path.join(rox, 'configs/sick_lidar', 'nanoscan_1.yaml')],
+                condition=UnlessCondition(mock_arm),
+                remappings=[
+                    ('/scan', '/lidar_1/scan_filtered')
+                ]
+            )
+        
+        launches.append(scan1)
+
+        scan2 = Node(
+                package="sick_safetyscanners2",
+                executable="sick_safetyscanners2_node",
+                name="lidar_2_node",
+                output="screen",
+                emulate_tty=True,
+                parameters=[os.path.join(rox, 'configs/sick_lidar', 'nanoscan_2.yaml')],
+                condition=UnlessCondition(mock_arm),
+                remappings=[
+                    ('/scan', '/lidar_2/scan_filtered'),
+                ]
+            )
+        
+        launches.append(scan2)
+    
+    # Laser - PsenScan
+    elif scanner_typ == "psenscan":
+        scan = IncludeLaunchDescription(
+            XMLLaunchDescriptionSource(
+                os.path.join(get_package_share_directory('psen_scan_v2'),
+                    'launch',
+                    'psen_scan_v2.launch.xml')
+            ),
+            condition=UnlessCondition(mock_arm),
+            launch_arguments={
+                'sensor_ip': "192.168.1.30",
+                'host_ip': "192.168.1.10"
+            }.items()
+        )
+    
+        launches.append(scan)
 
     # 5. IMU
     if imu_enable == 'True':
@@ -105,11 +211,10 @@ def execution_stage(context: LaunchContext,
                 ),
                 launch_arguments={
                     'ur_type': arm_typ,
-                    'robot_ip': robot_ip,
+                    'robot_ip': "192.168.1.102",
                     'tf_prefix': arm_typ,
                     'use_mock_hardware': use_mock,
-                    'mock_sensor_commands': use_mock,
-                    'initial_joint_controller': initial_joint_controller
+                    'mock_sensor_commands': use_mock
                 }.items()
             )
 
@@ -156,17 +261,14 @@ def generate_launch_description():
     
     # Launch configuration
     robot_namespace = LaunchConfiguration('robot_namespace')
-    frame_type = LaunchConfiguration('frame_type')
     rox_type = LaunchConfiguration('rox_type')
     arm_type = LaunchConfiguration('arm_type')
     scanner_type = LaunchConfiguration('scanner_type')
     imu_enable = LaunchConfiguration('imu_enable')
     ur_dc = LaunchConfiguration('use_ur_dc')
     mock_arm = LaunchConfiguration('use_mock_arm')
-    initial_joint_controller = LaunchConfiguration('initial_joint_controller')
-    robot_ip = LaunchConfiguration('robot_ip')
 
-    context_arguments = [robot_namespace, frame_type, rox_type, arm_type, scanner_type, imu_enable, ur_dc, mock_arm, initial_joint_controller, robot_ip]
+    context_arguments = [robot_namespace, rox_type, arm_type, scanner_type, imu_enable, ur_dc, mock_arm]
 
     opq_function = OpaqueFunction(function=execution_stage, args=context_arguments)
     
@@ -174,14 +276,9 @@ def generate_launch_description():
             'robot_namespace', default_value='', description='Top-level namespace'
         )
     
-    declare_frame_type_cmd = DeclareLaunchArgument(
-            'frame_type', default_value='short',
-            description='Frame type - Options: short/long'
-        )
-    
     declare_rox_type_cmd = DeclareLaunchArgument(
             'rox_type', default_value='argo',
-            description='Robot type - Options: argo/diff/trike/meca'
+            description='Robot type - Options: argo/diff/trike'
         )
 
     declare_imu_cmd = DeclareLaunchArgument(
@@ -209,116 +306,14 @@ def generate_launch_description():
             description="Mock arm and gripper (if available)"
         )
     
-    declare_initial_joint_controller_cmd = DeclareLaunchArgument(
-            'initial_joint_controller',
-            default_value='scaled_joint_trajectory_controller',
-            choices=[
-                'scaled_joint_trajectory_controller',
-                'joint_trajectory_controller',
-            ],
-            description='Initially loaded robot controller.'
-        )
-
-    declare_robot_ip_cmd = DeclareLaunchArgument(
-            'robot_ip', default_value='192.168.1.102',
-            description='IP address of the robot.'
-        )
-    
-    # Group hardware nodes that only run when use_mock_arm is False
-    real_hardware_group = GroupAction(
-        [
-            # 1. Relayboard
-            Node(
-                package='neo_relayboard_v3',
-                executable='relayboardv3_node',
-                name='neo_relayboard_v3_node',
-                output='screen',
-                parameters=[{
-                    "pilot_config": [
-                        "/home/neobotix/ros2_workspace/src/rox/rox_bringup/configs/neo_relayboard_v3/rox-",
-                        LaunchConfiguration('rox_type'),
-                        "/"
-                    ]
-                }],
-            ),
-            # 2. Kinematics - Argo
-            Node(
-                package='rox_argo_kinematics',
-                executable='rox_argo_kinematics_node',
-                output='screen',
-                name='argo_kinematics_node',
-                parameters=[PathJoinSubstitution([FindPackageShare('rox_bringup'), 'configs/kinematics', LaunchConfiguration('rox_type'), '_kinematics.yaml'])],
-                condition=IfCondition(PythonExpression(["'", LaunchConfiguration('rox_type'), "' == 'argo'"]))
-            ),
-            # 2. Kinematics - Diff
-            Node(
-                package='rox_diff_kinematics',
-                executable='rox_diff_kinematics_node',
-                output='screen',
-                name='diff_kinematics_node',
-                parameters=[PathJoinSubstitution([FindPackageShare('rox_bringup'), 'configs/kinematics', LaunchConfiguration('rox_type'), '_kinematics.yaml'])],
-                condition=IfCondition(PythonExpression(["'", LaunchConfiguration('rox_type'), "' == 'diff'"]))
-            ),
-            # 3. Teleop
-            Node(
-                package='neo_teleop2',
-                executable='neo_teleop2_node',
-                output='screen',
-                name='neo_teleop2_node',
-                parameters=[PathJoinSubstitution([FindPackageShare('rox_bringup'), 'configs/teleop', LaunchConfiguration('rox_type'), '_teleop.yaml'])],
-            ),
-            # 3. Joy
-            Node(
-                package='joy',
-                executable='joy_node',
-                output='screen',
-                name='joy_node',
-                parameters=[{'dev': "/dev/input/js0"}, {'deadzone': 0.12}],
-            ),
-            # 4. Laser - nanoscan
-            Node(
-                package="sick_safetyscanners2",
-                executable="sick_safetyscanners2_node",
-                name="lidar_1_node",
-                output="screen",
-                emulate_tty=True,
-                parameters=[PathJoinSubstitution([FindPackageShare('rox_bringup'), 'configs/sick_lidar', 'nanoscan_1.yaml'])],
-                remappings=[('/scan', '/lidar_1/scan_filtered')],
-                condition=IfCondition(PythonExpression(["'", LaunchConfiguration('scanner_type'), "' == 'nanoscan'"]))
-            ),
-            Node(
-                package="sick_safetyscanners2",
-                executable="sick_safetyscanners2_node",
-                name="lidar_2_node",
-                output="screen",
-                emulate_tty=True,
-                parameters=[PathJoinSubstitution([FindPackageShare('rox_bringup'), 'configs/sick_lidar', 'nanoscan_2.yaml'])],
-                remappings=[('/scan', '/lidar_2/scan_filtered')],
-                condition=IfCondition(PythonExpression(["'", LaunchConfiguration('scanner_type'), "' == 'nanoscan'"]))
-            ),
-            IncludeLaunchDescription(
-                XMLLaunchDescriptionSource(
-                    PathJoinSubstitution([FindPackageShare('psen_scan_v2'), 'launch', 'psen_scan_v2.launch.xml'])
-                ),
-                condition=IfCondition(PythonExpression([LaunchConfiguration('scanner_type'), "' == 'psenscan'"])),
-                launch_arguments={'sensor_ip': "192.168.1.30", 'host_ip': "192.168.1.10"}.items(),
-            )
-        ],
-        condition=UnlessCondition(LaunchConfiguration('use_mock_arm'))
-    )
-
     ld = LaunchDescription()
     ld.add_action(declare_namespace_cmd)
     ld.add_action(declare_rox_type_cmd)
     ld.add_action(declare_imu_cmd)
     ld.add_action(declare_arm_cmd)
-    ld.add_action(declare_frame_type_cmd)
     ld.add_action(declare_scanner_cmd)
     ld.add_action(declare_ur_pwr_variant_cmd)
     ld.add_action(declare_mock_arm_cmd)
-    ld.add_action(declare_initial_joint_controller_cmd)
-    ld.add_action(declare_robot_ip_cmd)
-    ld.add_action(real_hardware_group)
     ld.add_action(opq_function)
 
     return ld
