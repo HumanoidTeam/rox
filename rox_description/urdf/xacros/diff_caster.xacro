@@ -4,7 +4,7 @@
   <xacro:macro name="diff_caster" params="name parent *origin vis_rot vis_pos joint_type collision_pos">
     <joint name="${name}_joint" type="${joint_type}">
       <xacro:insert_block name="origin" />
-      <joint_properties damping="1." friction="1.0"/>
+      <dynamics damping="1." friction="1.0"/>
       <limit effort="1000.0" lower="-1e+16" upper="1e+16" velocity="100"/>
       <axis xyz="1 0 0" />
       <parent link="${parent}" />

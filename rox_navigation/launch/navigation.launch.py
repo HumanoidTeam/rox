@@ -19,26 +19,30 @@ from launch.launch_context import LaunchContext
 
 def execution_stage(
         context: LaunchContext,
-        rox_type, use_sim_time,
-        autostart, namespace, use_multi_robots,
-        head_robot, use_amcl, map_dir, param_dir, use_rviz):
+        rox_type, 
+        use_sim_time,
+        autostart, 
+        namespace, 
+        use_multi_robots,
+        head_robot, 
+        use_amcl, 
+        map_dir, 
+        param_dir, 
+        use_rviz):
     
     launches = []
 
     rox_typ = str(rox_type.perform(context))
-    params = str(param_dir.perform(context))
-    
-    # Set the kinematics type based on the robot type
+    params = param_dir
     kinematics_type = "omni"
+    
     if (rox_typ == "diff" or rox_typ == "trike"):
         kinematics_type = "diff"
 
-    # If the parameter file is not provided, use the default one based on the robot type
-    if not params:
-        params = os.path.join(
-                get_package_share_directory('rox_navigation'),
-                'configs',
-                'navigation_' + kinematics_type + ".yaml")
+    params = os.path.join(
+            get_package_share_directory('rox_navigation'),
+            'configs',
+            'navigation_' + kinematics_type + ".yaml")
    
     nav2_launch_file_dir = os.path.join(get_package_share_directory('neo_nav2_bringup'), 'launch')
 
@@ -72,9 +76,7 @@ def execution_stage(
             PythonLaunchDescriptionSource([nav2_launch_file_dir, '/navigation_neo.launch.py']),
             launch_arguments={'namespace': namespace,
                               'use_sim_time': use_sim_time,
-                              'params_file': params,
-                              'use_rviz': use_rviz,
-                              }.items()),
+                              'params_file': params}.items()),
     ])
 
     # Start map_server if this robot is assigned as the head robot and if there is no multi-robot,
@@ -102,8 +104,22 @@ def execution_stage(
         ]
     )
 
+    # Start RViz if use_rviz is True
+    start_rviz = IncludeLaunchDescription(
+        condition=IfCondition(use_rviz),
+        launch_description_source=PythonLaunchDescriptionSource(
+            [nav2_launch_file_dir, '/rviz_launch.py']),
+        launch_arguments={
+            'namespace': namespace,
+            'use_namespace': use_multi_robots,
+            'use_sim_time': use_sim_time,
+            'rviz_output': 'log' ,
+        }.items(),
+    )
+
     launches.append(start_navigation)
     launches.append(start_map_server)
+    launches.append(start_rviz)
 
     return launches
     
@@ -164,9 +180,11 @@ def generate_launch_description():
         )
     
     declare_nav2_param_file_cmd = DeclareLaunchArgument(
-            'nav2_params_file', default_value="",
-            description='Full path to the Nav2 parameters file to load.\n'
-                        '\tLeave empty to use the default file based on the robot type'
+            'nav2_params_file', default_value=os.path.join(
+                get_package_share_directory('rox_navigation'),
+                'configs',
+                'navigation_omni.yaml'),
+            description='Full path to the Nav2 parameters file to load'
         )
     
     declare_use_rviz_cmd = DeclareLaunchArgument(
