@@ -14,14 +14,9 @@ import os
 from pathlib import Path
 import xacro
 
-def execution_stage(context: LaunchContext, frame_type, rox_type, arm_type):
-    frame_typ = frame_type.perform(context)
+def execution_stage(context: LaunchContext, rox_type, arm_type):
     arm_typ = arm_type.perform(context)
     rox_typ = rox_type.perform(context)
-
-    if (rox_typ == "meca"):
-        frame_typ = "long"
-        print("Meca only supports long frame")   
     
     urdf = os.path.join(get_package_share_directory('rox_description'), 'urdf', 'rox.urdf.xacro')
 
@@ -31,9 +26,7 @@ def execution_stage(context: LaunchContext, frame_type, rox_type, arm_type):
         name='robot_state_publisher',
         output='screen',
         parameters=[{'robot_description': Command([
-            "xacro", " ", urdf, " ", 'frame_type:=',
-            frame_typ,
-            " ", 'arm_type:=',
+            "xacro", " ", urdf, " ", 'arm_type:=',
             arm_typ,
             " ", 'rox_type:=',
             rox_type])}],
@@ -42,9 +35,29 @@ def execution_stage(context: LaunchContext, frame_type, rox_type, arm_type):
     return [start_robot_state_publisher_cmd]
 
 def generate_launch_description():
-    opq_function = OpaqueFunction(function=execution_stage,
-                                  args=[LaunchConfiguration('frame_type',  default="short"),
-                                        LaunchConfiguration('rox_type',  default="argo"),
-                                        LaunchConfiguration('arm_type',  default="")])
+    
+    # Launch configuration
+    rox_type = LaunchConfiguration('rox_type')
+    arm_type = LaunchConfiguration('arm_type')
+    
+    declare_rox_type_cmd = DeclareLaunchArgument(
+            'rox_type', default_value='argo',
+            description='Robot type - Options: argo/argo-trio/diff/trike'
+        )
+   
+    declare_arm_cmd = DeclareLaunchArgument(
+            'arm_type', default_value='',
+            description='Arm used in the robot - currently only support universal'
+        )
 
-    return LaunchDescription([opq_function])
+    context_arguments = [rox_type, arm_type]
+
+    opq_function = OpaqueFunction(function=execution_stage,
+                                  args=context_arguments)
+
+    ld = LaunchDescription()
+    ld.add_action(declare_rox_type_cmd)
+    ld.add_action(declare_arm_cmd)
+    ld.add_action(opq_function)
+
+    return ld
