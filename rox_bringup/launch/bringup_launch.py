@@ -198,21 +198,30 @@ def execution_stage(context: LaunchContext,
     relay_topic_lidar1 = Node(
             package='topic_tools',
             executable = 'relay',
-            name='relay',
-			namespace =  rp_ns,
+            name='relay_lidar1',
+            namespace =  rp_ns,
             output='screen',
             parameters=[{'input_topic': rp_ns + "lidar_1/scan_filtered",'output_topic': rp_ns + "scan"}])
 
     relay_topic_lidar2 = Node(
             package='topic_tools',
             executable = 'relay',
-            name='relay',
-			namespace =  rp_ns,
+            name='relay_lidar2',
+            namespace =  rp_ns,
             output='screen',
             parameters=[{'input_topic': rp_ns + "lidar_2/scan_filtered",'output_topic': rp_ns + "scan"}])
 
+    # Relay drive/joint_states topic to joint_states
+    relay_topic_joint_states = Node(
+        package='topic_tools',
+        executable = 'relay',
+        name='relay_joint_states',
+        output='screen',
+        parameters=[{'input_topic': "drive/joint_states",'output_topic': "joint_states"}])
+
     launches.append(relay_topic_lidar1)
     launches.append(relay_topic_lidar2)
+    launches.append(relay_topic_joint_states)
 
     return launches
 
