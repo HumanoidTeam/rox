@@ -1,6 +1,6 @@
 /**:
   ros__parameters:
-    num_wheels: 4
+    num_wheels: 3
     control_rate: 100.0
     wheel_radius: 0.050
     wheel_lever_arm: 0.0
@@ -21,8 +21,8 @@
     wheel1:
       drive_joint_name: "wheel_back_joint"
       steer_joint_name: "caster_back_joint"
-      center_pos_x: 0.0
-      center_pos_y: 0.238
+      center_pos_x: -0.234
+      center_pos_y: 0.0
 
     wheel2:
       drive_joint_name: "wheel_front_right_joint"

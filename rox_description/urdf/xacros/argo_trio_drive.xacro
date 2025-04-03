@@ -33,7 +33,7 @@
         <origin xyz="0.0 0.0 -0.07225" rpy="0 0 ${pi}" />
     </xacro:argo_wheel>
 
-    <xacro:argo_wheel name="wheel_back" parent="caster_back_left_link"
+    <xacro:argo_wheel name="wheel_back" parent="caster_back_link"
         joint_type="${joint_typ}">
         <origin xyz="0.0 0.0 -0.07225" rpy="0 0 0" />
     </xacro:argo_wheel>
