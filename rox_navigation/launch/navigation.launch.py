@@ -29,13 +29,13 @@ def execution_stage(
         map_dir, 
         param_dir, 
         use_rviz):
-    
+
     launches = []
 
     rox_typ = str(rox_type.perform(context))
     params = param_dir
     kinematics_type = "omni"
-    
+
     if (rox_typ == "diff" or rox_typ == "trike"):
         kinematics_type = "diff"
 
@@ -43,7 +43,7 @@ def execution_stage(
             get_package_share_directory('rox_navigation'),
             'configs',
             'navigation_' + kinematics_type + ".yaml")
-   
+
     nav2_launch_file_dir = os.path.join(get_package_share_directory('neo_nav2_bringup'), 'launch')
 
     # Start navigation and push namespace if and only if the multi robot scenario is set to true. 
@@ -61,6 +61,7 @@ def execution_stage(
                 'params_file': params,
                 'namespace': namespace}.items(),
         ),
+
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([nav2_launch_file_dir, '/localization_amcl.launch.py']),
             condition=IfCondition(use_amcl),
@@ -99,7 +100,7 @@ def execution_stage(
             name='lifecycle_manager_localization',
             output='screen',
             parameters=[{'use_sim_time': use_sim_time},
-						{'autostart': autostart},
+                        {'autostart': autostart},
                         {'node_names': ['map_server']}])
         ]
     )
@@ -122,7 +123,7 @@ def execution_stage(
     launches.append(start_rviz)
 
     return launches
-    
+
 def generate_launch_description():
     launch_desc = LaunchDescription()
     use_multi_robots = LaunchConfiguration('use_multi_robots')

@@ -22,7 +22,7 @@ def execution_stage(context: LaunchContext,
                     d435_enable, 
                     imu_enable, 
                     ur_dc):
-    
+
     launch_actions = []
 
     default_world_path = os.path.join(get_package_share_directory('neo_gz_worlds'), 'worlds', 'neo_workshop.sdf')
@@ -36,7 +36,7 @@ def execution_stage(context: LaunchContext,
 
     if (rox_typ == "diff" or rox_typ == "trike"):
         joint_type = "revolute"
-    
+
     urdf = os.path.join(get_package_share_directory('rox_description'), 'urdf', 'rox.urdf.xacro')
 
     spawn_robot = Node(
@@ -47,7 +47,7 @@ def execution_stage(context: LaunchContext,
         arguments=[
             '-topic', "robot_description",
             '-name', "rox"])
-    
+
     gz_sim = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(get_package_share_directory('ros_gz_sim'), 'launch', 'gz_sim.launch.py')
@@ -109,7 +109,7 @@ def execution_stage(context: LaunchContext,
             )
         }]
     )
-    
+
     teleop =  Node(
         package='teleop_twist_keyboard',
         executable="teleop_twist_keyboard",
@@ -118,7 +118,7 @@ def execution_stage(context: LaunchContext,
         name='teleop',
         parameters=[{'stamped': False}]  # Set stamped parameter to true for TwistStamped /cmd_vel
     )
-  
+
     gz_bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
@@ -164,7 +164,7 @@ def execution_stage(context: LaunchContext,
     return launch_actions
 
 def generate_launch_description():
-    
+
     declare_rox_type_cmd = DeclareLaunchArgument(
             'rox_type', default_value='argo',
             choices = ['', 'argo', 'diff', 'trike'],
@@ -175,18 +175,18 @@ def generate_launch_description():
             'imu_enable', default_value='False',
             description='Enable IMU - Options: True/False'
         )
-    
+
     declare_realsense_cmd = DeclareLaunchArgument(
             'd435_enable', default_value='False',
             description='Enable Realsense - Options: True/False'
         )
-    
+
     declare_arm_type_cmd = DeclareLaunchArgument(
             'arm_type', default_value='',
             choices=['', 'ur5', 'ur10', 'ur5e', 'ur10e', 'ec66', 'cs66'],
             description='Arm Types\n\t'        
         )
-    
+
     declare_ur_pwr_variant_cmd = DeclareLaunchArgument(
             'use_ur_dc', default_value='False',
             description='Set this argument to True if you have an UR arm with DC variant'
@@ -201,7 +201,7 @@ def generate_launch_description():
             LaunchConfiguration('imu_enable'),
             LaunchConfiguration('use_ur_dc')
             ])
-    
+
     ld = LaunchDescription([
         declare_imu_cmd,
         declare_realsense_cmd,
@@ -211,4 +211,3 @@ def generate_launch_description():
         opq_function
     ])
     return ld
-
