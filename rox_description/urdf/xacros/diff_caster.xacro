@@ -2,6 +2,7 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="rox">
 
   <xacro:macro name="diff_caster" params="name parent *origin vis_rot vis_pos joint_type collision_pos">
+
     <joint name="${name}_joint" type="${joint_type}">
       <xacro:insert_block name="origin" />
       <dynamics damping="1." friction="1.0"/>
@@ -31,7 +32,7 @@
         </geometry>
       </collision>
     </link>
-   
+
   </xacro:macro>
-  
+
 </robot>
