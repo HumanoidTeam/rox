@@ -2,9 +2,10 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="rox">
 
   <xacro:macro name="cabinet" params="name parent *origin">
+
     <joint name="${name}_joint" type="fixed">
       <xacro:insert_block name="origin" />
-      <joint_properties damping="1" friction="1" />
+      <dynamics damping="1" friction="1" />
       <parent link="${parent}" />
       <child link="${name}_link" />
     </joint>
@@ -40,5 +41,5 @@
     </link>
 
   </xacro:macro>
-  
+
 </robot>

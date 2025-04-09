@@ -2,10 +2,11 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="rox">
 
   <xacro:macro name="argo_wheel" params="name parent *origin joint_type">
+
    <joint name="${name}_joint" type="${joint_type}">
     <xacro:insert_block name="origin" />
     <limit effort="1000.0" lower="-1e+16" upper="1e+16" velocity="100"/>
-    <joint_properties damping="1.0" friction="1"/>
+    <dynamics damping="1.0" friction="1"/>
     <axis xyz="1 0 0" />
     <parent link="${parent}" />
     <child link="${name}_link" />
@@ -31,7 +32,7 @@
       </geometry>
     </collision>
    </link>
-   
+
   </xacro:macro>
-  
+
 </robot>
