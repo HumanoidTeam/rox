@@ -17,10 +17,10 @@ from pathlib import Path
 import xacro
 
 def execution_stage(context: LaunchContext, 
-                    rox_type, 
-                    arm_type, 
-                    d435_enable, 
-                    imu_enable, 
+                    rox_type,
+                    arm_type,
+                    d435_enable,
+                    imu_enable,
                     ur_dc,
                     headless_sim):
 
@@ -175,7 +175,7 @@ def generate_launch_description():
 
     declare_rox_type_cmd = DeclareLaunchArgument(
             'rox_type', default_value='argo',
-            choices = ['', 'argo', 'diff', 'trike'],
+            choices = ['', 'argo', 'argo-trio', 'diff', 'trike'],
             description='ROX Drive Type\n\t'
         )
 
