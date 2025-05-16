@@ -374,7 +374,7 @@ def generate_launch_description():
     declare_controllers_file_cmd = DeclareLaunchArgument(
             'controllers_file',
             default_value=os.path.join(
-                get_package_share_directory('neo_mpo_700-2'),
+                get_package_share_directory('rox_bringup'),
                 'configs/ur/ur_controllers.yaml'
             ),
             description='YAML file with the arm controllers configuration.',
