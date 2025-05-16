@@ -165,7 +165,8 @@ def execution_stage(context: LaunchContext,
                                 'nanoscan_1.yaml')],
                 condition=UnlessCondition(mock_arm),
                 remappings=[
-                    ('/scan', '/lidar_1/scan_filtered')
+                    ('/scan', '/lidar_1/scan_filtered'),
+                    ('/extended_scan', '/lidar_1/extended_scan')
                 ]
             )
 
@@ -183,6 +184,7 @@ def execution_stage(context: LaunchContext,
                 condition=UnlessCondition(mock_arm),
                 remappings=[
                     ('/scan', '/lidar_2/scan_filtered'),
+                    ('/extended_scan', '/lidar_2/extended_scan')
                 ]
             )
 
