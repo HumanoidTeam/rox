@@ -69,15 +69,15 @@ def execution_stage(context: LaunchContext,
     launches.append(kinematics)
 
     # teleop
-    teleop = Node(
-                package='neo_teleop2',
-                executable='neo_teleop2_node',
-                output='screen',
-                name='neo_teleop2_node',
-                parameters = [os.path.join(rox,'configs/teleop', rox_typ + '_teleop.yaml')]
-            )
+    # teleop = Node(
+    #             package='neo_teleop2',
+    #             executable='neo_teleop2_node',
+    #             output='screen',
+    #             name='neo_teleop2_node',
+    #             parameters = [os.path.join(rox,'configs/teleop', rox_typ + '_teleop.yaml')]
+    #         )
     
-    launches.append(teleop)
+    # launches.append(teleop)
 
     # joy
     joy = Node(
