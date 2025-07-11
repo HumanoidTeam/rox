@@ -195,18 +195,18 @@ controller_server:
       movement_time_allowance: 100.0
     general_goal_checker:
       plugin: "nav2_controller::SimpleGoalChecker"
-      xy_goal_tolerance: 0.05
-      yaw_goal_tolerance: 0.05
+      xy_goal_tolerance: 0.01
+      yaw_goal_tolerance: 0.01
       stateful: True
     FollowPath:
       plugin: "neo_local_planner2::NeoLocalPlanner"
       acc_lim_x : 0.25
       acc_lim_y : 0.25
       acc_lim_theta : 0.6
-      max_vel_x : 0.6
+      max_vel_x : 0.2
       min_vel_x : -0.2
-      max_vel_y : 0.5
-      min_vel_y : -0.5
+      max_vel_y : 0.2
+      min_vel_y : -0.2
       max_rot_vel : 0.6
       min_rot_vel : 0.1
       max_trans_vel : 0.6
@@ -215,7 +215,7 @@ controller_server:
       xy_goal_tolerance : 0.01
       goal_tune_time : 0.5
       lookahead_time : 0.4
-      lookahead_dist : 1.0
+      lookahead_dist : 0.4
       start_yaw_error : 0.5
       pos_x_gain : 1.0
       pos_y_gain : 1.0
@@ -232,7 +232,7 @@ controller_server:
       max_backup_dist : 0.0
       min_stop_dist : 0.2
       differential_drive : false
-      allow_reversing: false
+      allow_reversing: true
 
 local_costmap:
   local_costmap:
@@ -243,7 +243,7 @@ local_costmap:
       robot_base_frame: base_link
       footprint_padding: 0.0
       footprint:  "[ [0.55,0.5],[-0.55,0.5],[-0.55,-0.5],[0.55,-0.5] ]"
-      use_sim_time: True
+      use_sim_time: False
       rolling_window: True
       width: 5
       height: 5
@@ -253,7 +253,7 @@ local_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 4.0
-        inflation_radius: 1.0
+        inflation_radius: 0.0
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
