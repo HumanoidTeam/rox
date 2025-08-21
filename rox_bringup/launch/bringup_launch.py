@@ -7,7 +7,8 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_xml.launch_description_sources import XMLLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, Command
+from launch.substitutions import LaunchConfiguration, Command, PathJoinSubstitution
+from launch_ros.substitutions import FindPackageShare
 from launch_ros.actions import Node
 from launch.launch_context import LaunchContext
 from launch.conditions import IfCondition
@@ -112,7 +113,12 @@ def execution_stage(context: LaunchContext,
           output='screen',
           name='neo_relayboard_v3_node',
           parameters = [
-              {"pilot_config": "/home/neobotix/hmnd/hmnd_robot/ros/third_party/rox/rox_bringup/configs/neo_relayboard_v3/rox-" + rox_typ + "/"}
+              {"pilot_config": PathJoinSubstitution([
+                  FindPackageShare('rox_bringup'),
+                  'configs',
+                  'neo_relayboard_v3',
+                  'rox-' + rox_typ + '/',
+              ])}
           ]
         )
     
