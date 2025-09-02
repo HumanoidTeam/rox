@@ -2,7 +2,7 @@
 	"topics_board_to_ros": [
 		["platform.emergency_state", "emergency_stop_state"],
 		["platform.battery_state", "battery_state"],
-		["kinematics.drive_state", "drive/joint_states"],
+		["kinematics.drive_state", "wheels/joint_states"],
 		["platform.io_board_data", "ioboard/data"],
 		["platform.us_board_data", "usboard/measurements"],
 		["platform.relay_board_data", "relayboard_v3/state"],
