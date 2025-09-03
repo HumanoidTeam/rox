@@ -11,7 +11,7 @@
 
 	"topics_ros_to_board": {
 		"trajectory_msgs/JointTrajectory": {
-			"drive/joint_trajectory": "kinematics.drive_cmd"
+			"wheels/joint_trajectory": "kinematics.drive_cmd"
 		},
 		"neo_msgs2/KinematicsState":{
 			"/kinematics_state": "kinematics.state"
