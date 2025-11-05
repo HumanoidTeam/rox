@@ -7,7 +7,8 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_xml.launch_description_sources import XMLLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, Command
+from launch.substitutions import LaunchConfiguration, Command, PathJoinSubstitution
+from launch_ros.substitutions import FindPackageShare
 from launch_ros.actions import Node
 from launch.launch_context import LaunchContext
 from launch.conditions import IfCondition
@@ -69,15 +70,15 @@ def execution_stage(context: LaunchContext,
     launches.append(kinematics)
 
     # teleop
-    teleop = Node(
-                package='neo_teleop2',
-                executable='neo_teleop2_node',
-                output='screen',
-                name='neo_teleop2_node',
-                parameters = [os.path.join(rox,'configs/teleop', rox_typ + '_teleop.yaml')]
-            )
+    # teleop = Node(
+    #             package='neo_teleop2',
+    #             executable='neo_teleop2_node',
+    #             output='screen',
+    #             name='neo_teleop2_node',
+    #             parameters = [os.path.join(rox,'configs/teleop', rox_typ + '_teleop.yaml')]
+    #         )
     
-    launches.append(teleop)
+    # launches.append(teleop)
 
     # joy
     joy = Node(
@@ -112,7 +113,12 @@ def execution_stage(context: LaunchContext,
           output='screen',
           name='neo_relayboard_v3_node',
           parameters = [
-              {"pilot_config": "/home/neobotix/ros2_workspace/src/rox/rox_bringup/configs/neo_relayboard_v3/rox-" + rox_typ + "/"}
+              {"pilot_config": PathJoinSubstitution([
+                  FindPackageShare('rox_bringup'),
+                  'configs',
+                  'neo_relayboard_v3',
+                  'rox-' + rox_typ + '/',
+              ])}
           ]
         )
     
